@@ -180,18 +180,16 @@ arguments."
       (if (not (aref peca l 0))
         (progn (decf altura-max) (incf diff))
         (return)))
+    (if (= 0 diff)
+      (setf diff ))
     
     (loop for c from (+ 1 coluna) upto (- (+ coluna (array-dimension peca 1)) 1) do
       (if (> (tabuleiro-altura-coluna (estado-Tabuleiro novo-estado) c) altura-max)
         (progn (setf altura-max (tabuleiro-altura-coluna (estado-Tabuleiro novo-estado) c))
-               (loop for l from 0 upto diff do
+               (loop for l from 0 upto (- (array-dimension peca 0) 1) do
                  (if (not (aref peca l (- c coluna)))
                    (decf altura-max)
                    (return))))))
-    (print diff)
-    (print altura-max)
-    (if (> altura-max 0)
-    	(incf altura-max))
     
    	(loop for l from altura-max upto (min 17 (- (+ altura-max (array-dimension peca 0)) 1)) do
 	    (loop for c from coluna upto (- (+ coluna (array-dimension peca 1)) 1) do
