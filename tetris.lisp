@@ -170,13 +170,14 @@ arguments."
   (let ((tabuleiro (estado-Tabuleiro estado))
         (altura (- (array-dimension peca 0) 1))
         (nlinhas 0))
+  ;ciclo para percorrer as linhas do tabuleiro (nº de linhas = altura da peça)
   (loop for i from 0 upto altura do
-    (if (tabuleiro-linha-completa-p tabuleiro linha-inicial)
-      (progn (tabuleiro-remove-linha! tabuleiro linha-inicial)
-             (incf nlinhas))
-      (incf linha-inicial)))
+    (if (tabuleiro-linha-completa-p tabuleiro linha-inicial) ;se linha estiver completa
+      (progn (tabuleiro-remove-linha! tabuleiro linha-inicial) ;remove linha
+             (incf nlinhas)) ;e incrementa nº linhas removidas
+      (incf linha-inicial))) ;caso contrário vê a linha acima
   
-  (if (= nlinhas 1)
+  (if (= nlinhas 1) ;cálculo de pontos
     (setf (estado-pontos estado) (+ (estado-pontos estado) 100))
     (if (= nlinhas 2)
       (setf (estado-pontos estado) (+ (estado-pontos estado) 300))
@@ -187,30 +188,35 @@ arguments."
       
   
 (defun resultado(estado accao)
-  (let ((novo-estado (copia-estado estado))
-        (coluna (car accao))
-        (peca (cdr accao))
-        (altura-max (tabuleiro-altura-coluna (estado-Tabuleiro estado) (car accao))))
+  (let ((novo-estado (copia-estado estado)) ;copia estado
+        (coluna (car accao))                ;coluna onde a peça vai ser colocada
+        (peca (cdr accao))                  ;estrutura da peça
+        ;altura onde a peça vai ser colodada a partir da 1ª coluna
+        (altura-max (tabuleiro-altura-coluna (estado-Tabuleiro estado) (car accao)))) 
+    ;ciclo para descer a altura da peca se tiver elementos a NIL na 1ª coluna
     (loop for l from 0 upto (- (array-dimension peca 0) 1) do
-      (if (not (aref peca l 0))
-        (progn (decf altura-max) (incf diff))
+      (if (not (aref peca l 0)) ;se elemento da peça for NIL
+        (decf altura-max) ;decrementa altura
         (return)))
     
+    ;ciclo para descer a altura da peca se tiver elementos a NIL nas restantes coluna (desde 2ª à última)
     (loop for c from (+ 1 coluna) upto (- (+ coluna (array-dimension peca 1)) 1) do
-      (if (> (tabuleiro-altura-coluna (estado-Tabuleiro novo-estado) c) altura-max)
-        (progn (setf altura-max (tabuleiro-altura-coluna (estado-Tabuleiro novo-estado) c))
-               (loop for l from 0 upto (- (array-dimension peca 0) 1) do
-                 (if (not (aref peca l (- c coluna)))
-                   (decf altura-max)
-                   (return))))))
+      (if (> (tabuleiro-altura-coluna (estado-Tabuleiro novo-estado) c) altura-max) ;se topo da coluna for maior que o topo da anterior
+        (progn (setf altura-max (tabuleiro-altura-coluna (estado-Tabuleiro novo-estado) c)) ;actualiza altura 
+              ;ciclo para descer a altura da peca se tiver elementos a NIL na coluna respectiva (- c coluna)
+              (loop for l from 0 upto (- (array-dimension peca 0) 1) do
+                (if (not (aref peca l (- c coluna))) ;se elemento da peça for NIL
+                  (decf altura-max) ;decrementa altura
+                  (return))))))
     
+    ;ciclo para preencher o tabuleiro com a peça
    	(loop for l from altura-max upto (min 17 (- (+ altura-max (array-dimension peca 0)) 1)) do
 	    (loop for c from coluna upto (- (+ coluna (array-dimension peca 1)) 1) do
         (if (aref peca (- l altura-max) (- c coluna))
           (setf (aref (estado-Tabuleiro novo-estado) l c) (aref peca (- l altura-max) (- c coluna))))))
-    (push (car (estado-pecas-por-colocar novo-estado)) (estado-pecas-colocadas novo-estado))
-    (pop (estado-pecas-por-colocar novo-estado))
-    (if (not (tabuleiro-topo-preenchido-p (estado-Tabuleiro novo-estado)))
-     (calcula-pontos novo-estado peca altura-max))
+    (push (car (estado-pecas-por-colocar novo-estado)) (estado-pecas-colocadas novo-estado)) ;actualiza lista das pecas-colocadas
+    (pop (estado-pecas-por-colocar novo-estado)) ;retira a peça colocada da lista das peças por-colocar
+    (if (not (tabuleiro-topo-preenchido-p (estado-Tabuleiro novo-estado))) ;se não foi game over
+     (calcula-pontos novo-estado peca altura-max)) ;calcula pontos
     novo-estado))
 	
