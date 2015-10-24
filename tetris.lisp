@@ -45,7 +45,7 @@ arguments."
 (defun tabuleiro-linha-completa-p(tabuleiro linha)
   (let ((completa T))
 		(loop for i from 0 upto 9 do
-		    (if (eq (aref tabuleiro linha i) NIL) (progn (setf completa NIL) (return))))
+		  (if (eq (aref tabuleiro linha i) NIL) (progn (setf completa NIL) (return))))
   	completa))
 
 (defun tabuleiro-preenche!(tabuleiro linha coluna)
@@ -166,22 +166,35 @@ arguments."
                                 (setf i -1))))))) ;i a 0 para fazer o ciclopara a nova rotação
     (reverse lista-accoes))) ;devolve lista de acções pela ordem correcta
 
-(defun calcula-pontos(estado)
+(defun calcula-pontos(estado peca linha-inicial)
+  (let ((tabuleiro (estado-Tabuleiro estado))
+        (altura (- (array-dimension peca 0) 1))
+        (nlinhas 0))
+  (loop for i from 0 upto altura do
+    (if (tabuleiro-linha-completa-p tabuleiro linha-inicial)
+      (progn (tabuleiro-remove-linha! tabuleiro linha-inicial)
+             (incf nlinhas))
+      (incf linha-inicial)))
   
-  (loop for i from (array-dimension (cdr accao) 1))
+  (if (= nlinhas 1)
+    (setf (estado-pontos estado) (+ (estado-pontos estado) 100))
+    (if (= nlinhas 2)
+      (setf (estado-pontos estado) (+ (estado-pontos estado) 300))
+      (if (= nlinhas 3)
+        (setf (estado-pontos estado) (+ (estado-pontos estado) 500))
+        (if (= nlinhas 4)
+          (setf (estado-pontos estado) (+ (estado-pontos estado) 800))))))))
+      
   
 (defun resultado(estado accao)
   (let ((novo-estado (copia-estado estado))
         (coluna (car accao))
         (peca (cdr accao))
-        (altura-max (tabuleiro-altura-coluna (estado-Tabuleiro estado) (car accao)))
-        (diff 0))
+        (altura-max (tabuleiro-altura-coluna (estado-Tabuleiro estado) (car accao))))
     (loop for l from 0 upto (- (array-dimension peca 0) 1) do
       (if (not (aref peca l 0))
         (progn (decf altura-max) (incf diff))
         (return)))
-    (if (= 0 diff)
-      (setf diff ))
     
     (loop for c from (+ 1 coluna) upto (- (+ coluna (array-dimension peca 1)) 1) do
       (if (> (tabuleiro-altura-coluna (estado-Tabuleiro novo-estado) c) altura-max)
@@ -197,7 +210,7 @@ arguments."
           (setf (aref (estado-Tabuleiro novo-estado) l c) (aref peca (- l altura-max) (- c coluna))))))
     (push (car (estado-pecas-por-colocar novo-estado)) (estado-pecas-colocadas novo-estado))
     (pop (estado-pecas-por-colocar novo-estado))
-    ;(if (not (tabuleiro-topo-preenchido-p (estado-Tabuleiro novo-estado)))
-     ; (calcula-pontos novo-estado))
+    (if (not (tabuleiro-topo-preenchido-p (estado-Tabuleiro novo-estado)))
+     (calcula-pontos novo-estado peca altura-max))
     novo-estado))
 	
