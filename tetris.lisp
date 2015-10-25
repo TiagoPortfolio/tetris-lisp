@@ -36,10 +36,10 @@ arguments."
   (if (eql (aref tabuleiro linha coluna) NIL) NIL T))
 
 (defun tabuleiro-altura-coluna(tabuleiro coluna)
-	(let ((altura 17))
+	(let ((altura 0))
     (loop for i from 17 downto 0 do
-	    (if (aref tabuleiro i coluna) (return)
-	      (decf altura)))
+	    (if (aref tabuleiro i coluna)
+        (progn (setf altura (+ i 1)) (return))))
     altura))
 
 (defun tabuleiro-linha-completa-p(tabuleiro linha)
@@ -192,7 +192,8 @@ arguments."
         (coluna (car accao))                ;coluna onde a peça vai ser colocada
         (peca (cdr accao))                  ;estrutura da peça
         ;altura onde a peça vai ser colodada a partir da 1ª coluna
-        (altura-max (tabuleiro-altura-coluna (estado-Tabuleiro estado) (car accao)))) 
+        (altura-max (tabuleiro-altura-coluna (estado-Tabuleiro estado) (car accao))))
+    
     ;ciclo para descer a altura da peca se tiver elementos a NIL na 1ª coluna
     (loop for l from 0 upto (- (array-dimension peca 0) 1) do
       (if (not (aref peca l 0)) ;se elemento da peça for NIL
@@ -208,7 +209,6 @@ arguments."
                 (if (not (aref peca l (- c coluna))) ;se elemento da peça for NIL
                   (decf altura-max) ;decrementa altura
                   (return))))))
-    
     ;ciclo para preencher o tabuleiro com a peça
    	(loop for l from altura-max upto (min 17 (- (+ altura-max (array-dimension peca 0)) 1)) do
 	    (loop for c from coluna upto (- (+ coluna (array-dimension peca 1)) 1) do
@@ -220,3 +220,20 @@ arguments."
      (calcula-pontos novo-estado peca altura-max)) ;calcula pontos
     novo-estado))
 	 
+(defun qualidade(estado)
+  (-(estado-pontos estado)))
+
+(defun custo-oportunidade(estado)
+  (let ((maxPontos 0)
+        (pecas (estado-pecas-colocadas estado))
+        (height 0))
+    (loop for i from 0 upto (- (length pecas) 1) do
+      (setf height (array-dimension (nth i pecas) 0))
+      (if (= height 2)
+        (setf maxPontos (+ maxPontos 300))
+        (if (= height 3)
+          (setf maxPontos (+ maxPontos 500))
+          (if (= height 4)
+            (setf maxPontos (+ maxPontos 800))))))
+    (- maxPontos (estado-pontos estado)))) 
+  
