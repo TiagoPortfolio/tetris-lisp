@@ -89,7 +89,7 @@ arguments."
   (make-estado :pontos (estado-pontos estado)
     :pecas-por-colocar (estado-pecas-por-colocar estado)
       :pecas-colocadas (estado-pecas-colocadas estado)
-      :Tabuleiro (estado-Tabuleiro estado)))
+      :Tabuleiro (copia-tabuleiro (estado-Tabuleiro estado))))
 
 ;Só para testar
 ;(defparameter *estadoteste* (make-estado
@@ -219,4 +219,4 @@ arguments."
     (if (not (tabuleiro-topo-preenchido-p (estado-Tabuleiro novo-estado))) ;se não foi game over
      (calcula-pontos novo-estado peca altura-max)) ;calcula pontos
     novo-estado))
-	
+	 
