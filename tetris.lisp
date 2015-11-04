@@ -145,6 +145,7 @@
             (aref array l c))))
   reversed))
 
+;Parametriza a letra da peca com a sua geometria
 (defun obter-geo-peca(peca)
   (if (equalp peca 'I) peca-i0
     (if (equalp peca 'L) peca-l0
@@ -153,13 +154,16 @@
           (if (equalp peca 'S) peca-s0
             (if (equalp peca 'Z) peca-z0
               peca-t0)))))))
-;limit: largura do tabuleiro - largura da peca (10 - ?)
+
+;Devolve lista de accoes possiveis
 (defun accoes(estado)
   (if (null (estado-pecas-por-colocar estado))
     (list )
     (let ((peca (obter-geo-peca (car (estado-pecas-por-colocar estado))))
+          ;limit: largura do tabuleiro - largura da peca (10 - ?)
           (limit (- 10 (array-dimension (obter-geo-peca (car (estado-pecas-por-colocar estado))) 1)))
-          (lista-accoes (list )))
+          (lista-accoes (list ))
+          (iter 0))
       (loop for i from 0 upto limit do
   	    (push (cons i peca) lista-accoes)) ;lista accoes para primeira rotacao 
       
@@ -167,20 +171,23 @@
       (setf limit (- 10 (array-dimension peca 1))) ;actualiza limit
       
       (if (not (equalp (obter-geo-peca (car (estado-pecas-por-colocar estado))) peca)) ;se a rotacao da peca nao for igual a original continua
-          (loop for i from 0 upto limit do
-            (push (cons i peca) lista-accoes)
-            (if (= i limit) ;chegou ao fim do ciclo
-                (progn (setf peca (reverse-array (mtp peca))) ;roda peca
-                       (if (equalp (obter-geo-peca (car (estado-pecas-por-colocar estado))) peca);se a rotacao da peca for igual a original sai do ciclo
-                           (return)
-                           (progn (setf limit (- 10 (cadr (array-dimensions peca)))) ;actualiza limit
-                                  (setf i -1))))))) ;i a 0 para fazer o ciclopara a nova rotacao
-      (reverse lista-accoes)))) ;devolve lista de accoes pela ordem correcta
+        (loop 
+          (push (cons iter peca) lista-accoes)
+          (incf iter)
+          (when (= (- iter 1) limit) ;chegou ao fim do ciclo
+            (progn (setf peca (reverse-array (mtp peca))) ;roda peca
+              (if (equalp (obter-geo-peca (car (estado-pecas-por-colocar estado))) peca) ;se a rotacao da peca for igual a original sai do ciclo
+                (return)
+                (progn (setf limit (- 10 (cadr (array-dimensions peca)))) ;actualiza limit
+                       (setf iter 0))))))) ;iter a 0 para fazer o ciclo para a nova rotacao
+    (reverse lista-accoes)))) ;devolve lista de accoes pela ordem correcta
 
+;Calcula os pontos e remove as linhas completas do tabuleiro
 (defun calcula-pontos(estado peca linha-inicial)
   (let ((tabuleiro (estado-Tabuleiro estado))
         (altura (- (array-dimension peca 0) 1))
         (nlinhas 0))
+    
   ;ciclo para percorrer as linhas do tabuleiro (n de linhas = altura da peca)
   (loop for i from 0 upto altura do
     (if (tabuleiro-linha-completa-p tabuleiro linha-inicial) ;se linha estiver completa
