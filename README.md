@@ -1,2 +1,2 @@
 # tetris-lisp
-Artificial Intelligence Tetris in Common Lisp
+Artificial Intelligence Tetris puzzle solver in Common Lisp.
