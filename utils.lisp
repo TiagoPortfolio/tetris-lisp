@@ -145,10 +145,10 @@
 	(tabuleiro-preenche! t1 0 coluna))
 (dotimes (coluna 9)
 	(tabuleiro-preenche! t1 1 coluna))
-(defvar e1 (make-estado :tabuleiro t1 :pecas-por-colocar '(i o j l t i)))
+(defvar e1 (make-estado :tabuleiro t1 :pecas-por-colocar '(l l l l l l l l l l)))
 
-(defvar p1
-	(make-problema :estado-inicial (make-estado :tabuleiro t1 :pecas-por-colocar '(i o j l t i))
+(defparameter *p1*
+	(make-problema :estado-inicial (make-estado :tabuleiro t1 :pecas-por-colocar '(i i i i i))
 				   :solucao #'solucao
 				   :accoes #'accoes
 				   :resultado #'resultado
